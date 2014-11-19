@@ -1,0 +1,10 @@
+# Set default verbosities.  Run "help /control/verbose", for example, to see what's available.
+ /control/verbose 0
+ /control/saveHistory CommandHistory
+ /run/verbose 2
+ /event/verbose 2
+ /tracking/verbose 0
+# ... etc
+ 
+# Visualization setting
+ /control/execute vis.mac

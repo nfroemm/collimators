@@ -1,0 +1,9 @@
+/run/beamOn 1
+
+#/ROOT/setOutputFile root/Simple_Graphite20mm_e5.root
+#/ROOT/setOutputFile root/Simple_Al15mm_e5.root
+/ROOT/setOutputFile root/Simple_Cu03mm_e5.root
+/run/initialize
+/run/beamOn 100000
+
+exit
