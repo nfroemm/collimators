@@ -11,9 +11,9 @@
 TrackingPlaneConstruction::TrackingPlaneConstruction(G4String& parallelWorldName)
 : G4VUserParallelWorld(parallelWorldName),
   BuildTrackingPlanes(true),
-  numTrackingPlanes(36),
-  hx(50*cm),
-  hy(50*cm),
+  numTrackingPlanes(12),
+  hx(10*cm),
+  hy( 7*cm),
   hz(0.5*nanometer),
   TrackingPlane_S(NULL),
   TrackingPlane_L(NULL),

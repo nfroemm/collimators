@@ -25,14 +25,14 @@ CollimatorConstruction* CollimatorConstruction::Instance()
 
 
 CollimatorConstruction::CollimatorConstruction()
-//: G4MaterialName("G4_GRAPHITE"),
+//: G4MaterialName("G4_Cu"),
 //: G4MaterialName("G4_Al"),
-  : G4MaterialName("G4_Cu"),
+  : G4MaterialName("G4_GRAPHITE"),
   rmin(45.*mm),
-  rmax(50.*mm),
-//dz  (20.*mm),
-//dz  (15.*mm),
-  dz  ( 3.*mm),
+  rmax(48.*mm),
+//dz  ( 3.*mm),
+//dz  ( 9.*mm),
+  dz  (10.*mm),
   Collimator_L(0),
   collRingAngle(0),
   collMaterial_(0),
@@ -41,7 +41,7 @@ CollimatorConstruction::CollimatorConstruction()
 {
   collMsgr_ = new CollimatorMessenger(this);
 
-  G4int expNum = 989;
+  G4int expNum = 1000;
   if (expNum==989) {
     collType[0] = NONE;
     collType[1] = FULL;
@@ -51,7 +51,8 @@ CollimatorConstruction::CollimatorConstruction()
     collType[5] = FULL;
     collType[6] = FULL;
     collType[7] = NONE;
-  } else {
+  } else if (expNum==821) {
+    // E821
     G4MaterialName = "G4_Cu";
     rmin = 45*mm;
     rmax = 55*mm;
@@ -64,7 +65,18 @@ CollimatorConstruction::CollimatorConstruction()
     collType[5] = FULL;
     collType[6] = FULL;
     collType[7] = HALF_INNER;
+  } else {
+    // Custom
+    collType[0] = NONE;
+    collType[1] = FULL;
+    collType[2] = NONE;
+    collType[3] = NONE;
+    collType[4] = NONE;
+    collType[5] = NONE;
+    collType[6] = NONE;
+    collType[7] = NONE;
   }
+
 }
 
 
@@ -171,3 +183,18 @@ void CollimatorConstruction::SetMaterial( G4String materialName )
 }
 
 
+void CollimatorConstruction::SetThickness(G4double thickness)
+{
+  G4double max_thickness = 2.*cm;
+  if (thickness>max_thickness) {
+    G4cout << "ERROR: Collimator thickness can be at most " << max_thickness/cm << " cm" << G4endl;
+    throw;
+  }
+#if 1
+  G4Tubs* collLV = NULL;
+  if (Collimator_L) collLV=dynamic_cast<G4Tubs*>(Collimator_L->GetSolid());
+  G4cout << "Present Thickness: " << 2.*collLV->GetZHalfLength()/mm << " mm" << G4endl;
+  collLV->SetZHalfLength(thickness/2.);
+  G4cout << "  NEW   Thickness: " << 2.*collLV->GetZHalfLength()/mm << " mm" << G4endl;
+#endif
+}

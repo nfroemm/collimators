@@ -1,9 +1,7 @@
-/run/beamOn 1
-
-#/ROOT/setOutputFile root/Simple_Graphite20mm_e5.root
-#/ROOT/setOutputFile root/Simple_Al15mm_e5.root
-/ROOT/setOutputFile root/Simple_Cu03mm_e5.root
-/run/initialize
+#--------------------------------------------------
+# Simple macro to generate 10^5 events
+#
+/ROOT/setOutputFile study2_betaX_dppFlat_coll1XXXX_Gr10mm_e5.root
 /run/beamOn 100000
 
 exit

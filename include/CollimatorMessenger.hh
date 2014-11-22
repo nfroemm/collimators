@@ -7,6 +7,7 @@
 class CollimatorConstruction;
 class G4UIdirectory;
 class G4UIcmdWithAString;
+class G4UIcmdWithADoubleAndUnit;
 
 
 class CollimatorMessenger: public G4UImessenger
@@ -18,9 +19,10 @@ class CollimatorMessenger: public G4UImessenger
     virtual void SetNewValue(G4UIcommand*, G4String);
     
   private:
-    CollimatorConstruction* collConstruction_;
-    G4UIdirectory*          collDir_;
-    G4UIcmdWithAString*     collMaterialCmd_;
+    CollimatorConstruction*    collConstruction_;
+    G4UIdirectory*             collDir_;
+    G4UIcmdWithAString*        collMaterialCmd_;
+    G4UIcmdWithADoubleAndUnit* collThicknessCmd_;
 };
 
 #endif

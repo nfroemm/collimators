@@ -20,6 +20,7 @@ class CollimatorConstruction
     void BuildCollimators( G4LogicalVolume* Mother_L );
 
     void SetMaterial( G4String );
+    void SetThickness( G4double );
 
   public:
     G4String             G4MaterialName;

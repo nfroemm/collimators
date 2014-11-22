@@ -33,7 +33,7 @@ endif()
 include(${Geant4_USE_FILE})
 include_directories(${PROJECT_SOURCE_DIR}/include ${ROOT_INCLUDE_DIR})
 #include_directories(/Users/nfroemm/Code/eigen/eigen-install/include/eigen3)
-include_directories(/Users/nfroemm/Code/eigen/3.2.2)
+include_directories( /Users/nfroemm/Code/eigen/3.2.2 )
 #include_directories(${EIGEN3_INCLUDE_DIR})
 
 #----------------------------------------------------------------------------
@@ -54,14 +54,14 @@ target_link_libraries(collimators ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 # build B1. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
-set(GM2_EXAMPLE00_SCRIPTS
+set(COLLIMATOR_SCRIPTS
   init.mac
   init_vis.mac
   vis.mac
   x_run.mac
 )
  
-foreach(_script ${GM2_EXAMPLE00_SCRIPTS})
+foreach(_script ${COLLIMATOR_SCRIPTS})
   configure_file(
     ${PROJECT_SOURCE_DIR}/${_script}
     ${PROJECT_BINARY_DIR}/${_script}

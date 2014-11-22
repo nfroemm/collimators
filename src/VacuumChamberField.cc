@@ -27,8 +27,8 @@
 
 VacuumChamberField::VacuumChamberField()
 : G4ElectroMagneticField(),
-  spinTracking_  (true),
-  quadModel_     (  2  ),
+  spinTracking_  (false),
+  quadModel_     (  2  ), // 1=continuous, 2=discrete
   quadFieldIndex_(0.182),
   quadScraping_  (false),
   fieldHelper_(0)

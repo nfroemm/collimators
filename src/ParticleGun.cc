@@ -62,6 +62,9 @@ void ParticleGun::SetMagicParameters()
 
 void ParticleGun::GeneratePrimaries(G4Event* anEvent)
 {
+  // Define some helper variables
+  G4double xrand, xprand, yrand, yprand, trand, dpp_rand=0.;
+
   // Get collimator geometry information
   G4double collRmin = CollimatorConstruction::Instance()->rmin;
   G4double collRmax = CollimatorConstruction::Instance()->rmax;
@@ -69,9 +72,100 @@ void ParticleGun::GeneratePrimaries(G4Event* anEvent)
   std::vector<double> collRingAngle = CollimatorConstruction::Instance()->collRingAngle;
 
   // Randomly choose a collimator at which to shoot a muon
-  G4int collNum = G4RandFlat::shootInt( collRingAngle.size() );
+  G4int collNum = G4RandFlat::shootInt( collRingAngle.size() ); // {0,1,2,3,4} for E989
   G4double ringAngle = collRingAngle[collNum]*degree;
 
+
+
+  // For now, first collimator only
+  ringAngle = collRingAngle[0]*degree;
+
+  G4int collGunType = 2;
+  G4String pdistr = "flat";
+
+  // Choose how to shoot particles
+  if (collGunType==1) {
+    // Vertical betatron only
+    xrand  = 0.;
+    xprand = 0.;
+    yrand  = collRmin + ( collRmax-collRmin )*G4RandFlat::shoot();
+    G4double sgn = G4RandFlat::shoot(); if (sgn<0.5) {sgn=-1.;} else {sgn=1.;}
+    yrand *= sgn;
+    yprand = 0.;
+    trand  = 0.;
+    if (pdistr=="gaus") {
+      dpp_rand = G4RandGauss::shoot() * 0.0015;
+    } else if (pdistr=="flat") {
+      G4double etax = 7.112*m/( 1-0.182 ); // to be same as below
+      G4double dpp_max = 0.045*m/etax;
+      dpp_rand = 2.*(G4RandFlat::shoot()-0.5) * dpp_max;
+    } else {
+      dpp_rand = 0.;
+    }
+
+  } else if (collGunType==2) {
+    // Horizontal betatron only
+    xrand = collRmin + ( collRmax-collRmin )*G4RandFlat::shoot();
+    G4double sgn = G4RandFlat::shoot(); if (sgn<0.5) {sgn=-1.;} else {sgn=1.;}
+    xrand *= sgn;
+    xprand = 0.;
+    yrand  = 0.;
+    yprand = 0.;
+    trand  = 0.;
+    if (pdistr=="gaus") {
+      dpp_rand = G4RandGauss::shoot() * 0.0015;
+    } else if (pdistr=="flat") {
+      G4double etax = 7.112*m/( 1-0.182 );
+      G4double dpp_max = 0.045*m/etax;
+      dpp_rand = 2.*(G4RandFlat::shoot()-0.5) * dpp_max;
+    } else {
+      dpp_rand = 0.;
+    }
+
+  } else {
+    // Safety
+    xrand    = collRmin + ( collRmax-collRmin )*G4RandFlat::shoot();
+    xprand   = 0.;
+    yrand    = 0.;
+    yprand   = 0.;
+    trand    = 0.;
+    dpp_rand = 0.;
+  }
+
+  // Transform position to global coordinates
+  G4double x = xrand + 7.112*m;
+  G4double y = yrand;
+  G4double z = -(collDz+0.001*mm)/2;
+  G4ThreeVector pos(x,y,z);
+  pos.rotateZ(90.*degree);
+  pos.rotateY(90.*degree);
+  pos.rotateZ(-ringAngle);
+
+  // Transform momentum to global coordinates
+  G4double px = xprand * P_magic;
+  G4double py = yprand * P_magic;
+  G4double pz = sqrt( pow(((1+dpp_rand)*P_magic),2) - px*px - py*py );
+  G4ThreeVector mom(px,py,pz);
+  mom.rotateZ(90.*degree);
+  mom.rotateY(90.*degree);
+  mom.rotateZ(-ringAngle);
+
+  // Define the initial polarization
+  G4ThreeVector pol = -mom/mom.mag();
+
+  // Load the gun
+  fParticleGun->SetParticleTime( trand );
+  fParticleGun->SetParticlePosition( pos );
+  fParticleGun->SetParticleMomentum( mom );
+  fParticleGun->SetParticlePolarization( pol );
+
+  // Fire
+  fParticleGun->GeneratePrimaryVertex(anEvent);
+}
+
+
+
+#if 0
   // The transverse momentum acceptance of the ring is set by the quadrupole strength
   G4double ring_xpmax = (45./7112.)*sqrt(1-0.182);
   G4double ring_ypmax = (45./7112.)*sqrt( 0.182 );
@@ -84,14 +178,7 @@ void ParticleGun::GeneratePrimaries(G4Event* anEvent)
   G4double ypmin = 0.9*ring_ypmax;
   G4double ypmax = 1.1*ring_ypmax;
 
-  G4bool sanityCheck = false;
-  if (sanityCheck) {
-    rmin = collRmin;
-    rmax = collRmax;
-  }
-
   // Generate random transverse positions/momenta
-  G4double xrand, xprand, yrand, yprand;
   G4bool within_ellipses=false;
   do {
     // Define some random-number helpers
@@ -114,48 +201,10 @@ void ParticleGun::GeneratePrimaries(G4Event* anEvent)
     }
   } while (within_ellipses==false);
 
-  // Generate a random time/momentum
-  G4double time = 0.;//ran_fnalw(0.,120.);
-  G4double dpp = G4RandGauss::shoot() * 0.001;
-
   // Write the initial phase space to the output file
   //fprintf(outfile,"% 12.4e% 12.4e% 12.4e% 12.4e% 12.4e% 12.4e\n", xrand, 1000.*xprand, yrand, 1000.*yprand, time, dpp);
+#endif
 
-  // Transform position to global coordinates
-  G4double x = xrand + 7.112*m;
-  G4double y = yrand;
-  G4double z = -(collDz+0.001*mm)/2;
-  G4ThreeVector pos(x,y,z);
-  pos.rotateZ(90.*degree);
-  pos.rotateY(90.*degree);
-  pos.rotateZ(-ringAngle);
-
-  // Transform momentum to global coordinates
-  G4double px = xprand * P_magic;
-  G4double py = yprand * P_magic;
-  G4double pz = sqrt( pow(((1+dpp)*P_magic),2) - px*px - py*py );
-  G4ThreeVector mom(px,py,pz);
-  mom.rotateZ(90.*degree);
-  mom.rotateY(90.*degree);
-  mom.rotateZ(-ringAngle);
-
-  // Define the initial polarization
-  G4ThreeVector pol = -mom/mom.mag();
-
-  // Load the gun
-  fParticleGun->SetParticleTime( time );
-  fParticleGun->SetParticlePosition( pos );
-  fParticleGun->SetParticleMomentum( mom );
-  fParticleGun->SetParticlePolarization( pol );
-
-  fParticleGun->SetParticleTime( 0 );
-  fParticleGun->SetParticlePosition( G4ThreeVector(0,7.112*m,10.*mm) );
-  fParticleGun->SetParticleMomentum( G4ThreeVector(P_magic,0,0));
-  fParticleGun->SetParticlePolarization( G4ThreeVector(-1,0,0) );
-
-  // Fire!
-  fParticleGun->GeneratePrimaryVertex(anEvent);
-}
 
 
 #if 0
