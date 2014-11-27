@@ -24,15 +24,28 @@ CollimatorConstruction* CollimatorConstruction::Instance()
 }
 
 
-CollimatorConstruction::CollimatorConstruction()
-//: G4MaterialName("G4_Cu"),
-//: G4MaterialName("G4_Al"),
-  : G4MaterialName("G4_GRAPHITE"),
+CollimatorConstruction::CollimatorConstruction() :
+
+//G4MaterialName("G4_GRAPHITE"),
+//dz(10.*mm),
+
+//G4MaterialName("G4_Al"),
+//dz( 9.*mm),
+
+//G4MaterialName("G4_Cu"),
+//dz( 3.*mm),
+
+//G4MaterialName("G4_GRAPHITE"),
+//dz(20.000*mm),
+
+  G4MaterialName("G4_Al"),
+  dz( 9.210*mm),
+
+//G4MaterialName("G4_Cu"),
+//dz( 1.487*mm),
+
   rmin(45.*mm),
   rmax(48.*mm),
-//dz  ( 3.*mm),
-//dz  ( 9.*mm),
-  dz  (10.*mm),
   Collimator_L(0),
   collRingAngle(0),
   collMaterial_(0),
@@ -47,8 +60,7 @@ CollimatorConstruction::CollimatorConstruction()
     collType[1] = FULL;
     collType[2] = FULL;
     collType[3] = NONE;
-    collType[4] = FULL;
-    collType[5] = FULL;
+    collType[4] = FULL; collType[5] = FULL;
     collType[6] = FULL;
     collType[7] = NONE;
   } else if (expNum==821) {

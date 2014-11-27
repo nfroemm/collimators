@@ -15,14 +15,14 @@ using namespace std;
 
 ParticleGun::ParticleGun()
 : G4VUserPrimaryGeneratorAction(),
- amu(0.),
- mmu(0.),
- gamma_magic(0.),
- beta_magic(0.),
- P_magic(0.),
- R_magic(0.),
- B_magic(0.),
- fParticleGun(0)
+  amu(0.),
+  mmu(0.),
+  gamma_magic(0.),
+  beta_magic(0.),
+  P_magic(0.),
+  R_magic(0.),
+  B_magic(0.),
+  fParticleGun(0)
 //outfile(0)
 {
   // Create a new particle gun that shoots one particle at a time
@@ -62,9 +62,6 @@ void ParticleGun::SetMagicParameters()
 
 void ParticleGun::GeneratePrimaries(G4Event* anEvent)
 {
-  // Define some helper variables
-  G4double xrand, xprand, yrand, yprand, trand, dpp_rand=0.;
-
   // Get collimator geometry information
   G4double collRmin = CollimatorConstruction::Instance()->rmin;
   G4double collRmax = CollimatorConstruction::Instance()->rmax;
@@ -72,70 +69,69 @@ void ParticleGun::GeneratePrimaries(G4Event* anEvent)
   std::vector<double> collRingAngle = CollimatorConstruction::Instance()->collRingAngle;
 
   // Randomly choose a collimator at which to shoot a muon
-  G4int collNum = G4RandFlat::shootInt( collRingAngle.size() ); // {0,1,2,3,4} for E989
-  G4double ringAngle = collRingAngle[collNum]*degree;
-
-
+  // G4int collNum = G4RandFlat::shootInt( collRingAngle.size() ); // {0,1,2,3,4} for E989
+  // G4double ringAngle = collRingAngle[collNum]*degree;
 
   // For now, first collimator only
-  ringAngle = collRingAngle[0]*degree;
+  G4double ringAngle = collRingAngle[0]*degree;
+
+  // Define some helper variables
+  G4double xrand, xprand, yrand, yprand, trand, dpp_rand;
+  xrand=xprand=yrand=yprand=trand=dpp_rand=0.;
+  G4double etax = 7.112*m/( 1-0.182 );
+  G4double dpp_max = collRmax/etax;
+
 
   G4int collGunType = 2;
-  G4String pdistr = "flat";
+  G4int pdistr = 1;
 
-  // Choose how to shoot particles
+
+  // Choose how to shoot particles into the collimators
   if (collGunType==1) {
     // Vertical betatron only
-    xrand  = 0.;
-    xprand = 0.;
-    yrand  = collRmin + ( collRmax-collRmin )*G4RandFlat::shoot();
-    G4double sgn = G4RandFlat::shoot(); if (sgn<0.5) {sgn=-1.;} else {sgn=1.;}
-    yrand *= sgn;
-    yprand = 0.;
-    trand  = 0.;
-    if (pdistr=="gaus") {
-      dpp_rand = G4RandGauss::shoot() * 0.0015;
-    } else if (pdistr=="flat") {
-      G4double etax = 7.112*m/( 1-0.182 ); // to be same as below
-      G4double dpp_max = 0.045*m/etax;
+    G4double sgn = G4RandFlat::shoot();
+    if (sgn<0.5) {sgn=-1.;} else {sgn=1.;}
+    yrand = sgn*( collRmin + ( collRmax-collRmin )*G4RandFlat::shoot() );
+    // Generate a random momentum
+    if (pdistr==1) { // Flat/Uniform
       dpp_rand = 2.*(G4RandFlat::shoot()-0.5) * dpp_max;
-    } else {
-      dpp_rand = 0.;
+    } else if (pdistr==2) { // Gaussian
+      dpp_rand = G4RandGauss::shoot() * 0.0015;
     }
 
   } else if (collGunType==2) {
-    // Horizontal betatron only
-    xrand = collRmin + ( collRmax-collRmin )*G4RandFlat::shoot();
-    G4double sgn = G4RandFlat::shoot(); if (sgn<0.5) {sgn=-1.;} else {sgn=1.;}
-    xrand *= sgn;
-    xprand = 0.;
-    yrand  = 0.;
-    yprand = 0.;
-    trand  = 0.;
-    if (pdistr=="gaus") {
+    // Horizontal betatron only (outer edge of collimator)
+    xrand  = collRmin + ( collRmax-collRmin )*G4RandFlat::shoot();
+    // Generate a random momentum
+    if (pdistr==1) { // Flat/Uniform
+      dpp_rand = G4RandFlat::shoot() * dpp_max;
+    } else if (pdistr==2) { // Gaussian
       dpp_rand = G4RandGauss::shoot() * 0.0015;
-    } else if (pdistr=="flat") {
-      G4double etax = 7.112*m/( 1-0.182 );
-      G4double dpp_max = 0.045*m/etax;
-      dpp_rand = 2.*(G4RandFlat::shoot()-0.5) * dpp_max;
-    } else {
-      dpp_rand = 0.;
+      if (dpp_rand<0.) dpp_rand*=-1.;
+    }
+
+  } else if (collGunType==3) {
+    // Horizontal betatron only (inner edge of collimator)
+    xrand  = -1.*( collRmin + ( collRmax-collRmin )*G4RandFlat::shoot() );
+    // Generate a random momentum
+    if (pdistr==1) { // Flat/Uniform
+      dpp_rand = -G4RandFlat::shoot() * dpp_max;
+    } else if (pdistr==2) { // Gaussian
+      dpp_rand = G4RandGauss::shoot() * 0.0015;
+      if (dpp_rand>0.) dpp_rand*=-1.;
     }
 
   } else {
-    // Safety
-    xrand    = collRmin + ( collRmax-collRmin )*G4RandFlat::shoot();
-    xprand   = 0.;
-    yrand    = 0.;
-    yprand   = 0.;
-    trand    = 0.;
-    dpp_rand = 0.;
+    G4cout << "ERROR: Collimator Gun Type\n";
+    throw;
   }
+
+
 
   // Transform position to global coordinates
   G4double x = xrand + 7.112*m;
   G4double y = yrand;
-  G4double z = -(collDz+0.001*mm)/2;
+  G4double z = -(collDz+0.001*mm)/2.;
   G4ThreeVector pos(x,y,z);
   pos.rotateZ(90.*degree);
   pos.rotateY(90.*degree);

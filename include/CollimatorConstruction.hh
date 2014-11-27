@@ -24,9 +24,9 @@ class CollimatorConstruction
 
   public:
     G4String             G4MaterialName;
+    G4double             dz;
     G4double             rmin;
     G4double             rmax;
-    G4double             dz;
     G4LogicalVolume*     Collimator_L;
     std::vector<double>  collRingAngle;
     G4Material*          collMaterial_;

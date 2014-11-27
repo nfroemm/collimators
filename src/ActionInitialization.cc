@@ -30,11 +30,11 @@ void ActionInitialization::BuildForMaster() const
 
 void ActionInitialization::Build() const
 {
+  SetUserAction( new ParticleGun()         );
   SetUserAction( new RunAction(rootMgr_)   );
   SetUserAction( new EventAction(rootMgr_) );
   SetUserAction( new SteppingAction()      );
   SetUserAction( new StackingAction()      );
-  SetUserAction( new ParticleGun()         );
 }  
 
 

@@ -7,12 +7,15 @@
 
 class SteppingAction : public G4UserSteppingAction
 {
-public:
+  public:
+    SteppingAction(void);
+    virtual ~SteppingAction();
 
-  SteppingAction(void);
-  virtual ~SteppingAction();
+    virtual void UserSteppingAction(const G4Step*);
 
-  virtual void UserSteppingAction(const G4Step*);
+  private:
+    G4double tMaxMuon_;
+    G4double tMaxElectron_;
 };
 
 #endif
